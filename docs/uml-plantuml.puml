@@ -1,0 +1,179 @@
+@startuml
+
+interface K2559603_NotificationObserver {
+    +update(event: K2559603_NotificationEvent)
+}
+
+interface K2559603_NotificationSubject {
+    +registerObserver(obs: K2559603_NotificationObserver)
+    +removeObserver(obs: K2559603_NotificationObserver)
+    +notifyObservers(event: K2559603_NotificationEvent)
+}
+
+class K2559603_NotificationService implements K2559603_NotificationSubject {
+    -observers : List<K2559603_NotificationObserver>
+}
+
+enum K2559603_NotificationEventType {
+    DUE_SOON
+    OVERDUE
+    RESERVATION_AVAILABLE
+}
+
+class K2559603_NotificationEvent {
+    -type : K2559603_NotificationEventType
+    -message : String
+    -user : K2559603_User
+    -book : K2559603_Book
+}
+
+enum K2559603_MembershipType {
+    STUDENT
+    FACULTY
+    GUEST
+}
+
+class K2559603_Book {
+    -id : String
+    -title : String
+    -author : String
+    -category : String
+    -isbn : String
+    -tags : List<String>
+    -reviews : List<String>
+    -edition : String
+    -featured : boolean
+    -recommended : boolean
+    -specialEdition : boolean
+    -borrowHistory : List<K2559603_BorrowTransaction>
+    -reservations : List<K2559603_Reservation>
+    -state : K2559603_BookState
+}
+
+class K2559603_User implements K2559603_NotificationObserver {
+    -id : String
+    -name : String
+    -email : String
+    -contactNumber : String
+    -membershipType : K2559603_MembershipType
+    -borrowHistory : List<K2559603_BorrowTransaction>
+}
+
+class K2559603_BorrowTransaction {
+    -id : String
+    -book : K2559603_Book
+    -user : K2559603_User
+    -borrowDate : LocalDate
+    -dueDate : LocalDate
+    -returnDate : LocalDate
+    -finePaid : double
+}
+
+class K2559603_Reservation {
+    -id : String
+    -book : K2559603_Book
+    -user : K2559603_User
+    -reservedDate : LocalDate
+    -active : boolean
+}
+
+interface K2559603_FineCalculationStrategy {
+    +calculateFine(overdueDays: long) : double
+}
+
+class K2559603_StudentFineStrategy implements K2559603_FineCalculationStrategy
+class K2559603_FacultyFineStrategy implements K2559603_FineCalculationStrategy
+class K2559603_GuestFineStrategy implements K2559603_FineCalculationStrategy
+
+class K2559603_FineCalculationContext {
+    -strategy : K2559603_FineCalculationStrategy
+    +setStrategy(strategy: K2559603_FineCalculationStrategy)
+    +calculateFine(overdueDays: long) : double
+}
+
+interface K2559603_BookState {
+    +borrow(book: K2559603_Book, user: K2559603_User)
+    +returnBook(book: K2559603_Book, user: K2559603_User)
+    +reserve(book: K2559603_Book, user: K2559603_User)
+    +getName() : String
+}
+
+class K2559603_AvailableState implements K2559603_BookState
+class K2559603_BorrowedState implements K2559603_BookState
+class K2559603_ReservedState implements K2559603_BookState
+
+interface K2559603_BookView {
+    +getDisplayTitle() : String
+}
+
+class K2559603_BasicBookView implements K2559603_BookView {
+    -book : K2559603_Book
+}
+
+abstract class K2559603_BookViewDecorator implements K2559603_BookView {
+    #inner : K2559603_BookView
+}
+
+class K2559603_FeaturedBookDecorator extends K2559603_BookViewDecorator
+class K2559603_RecommendedBookDecorator extends K2559603_BookViewDecorator
+class K2559603_SpecialEditionBookDecorator extends K2559603_BookViewDecorator
+
+interface K2559603_Command {
+    +execute()
+    +undo()
+    +getName() : String
+}
+
+class K2559603_BorrowBookCommand implements K2559603_Command
+class K2559603_ReturnBookCommand implements K2559603_Command
+class K2559603_ReserveBookCommand implements K2559603_Command
+class K2559603_CancelReservationCommand implements K2559603_Command
+
+class K2559603_CommandHistory {
+    -history : Stack<K2559603_Command>
+    +push(cmd: K2559603_Command)
+    +undoLast()
+}
+
+class K2559603_LibraryService {
+    -books : Map<String,K2559603_Book>
+    -users : Map<String,K2559603_User>
+    -transactions : List<K2559603_BorrowTransaction>
+    -reservations : List<K2559603_Reservation>
+}
+
+K2559603_Book "1" o-- "*" K2559603_BorrowTransaction
+K2559603_Book "1" o-- "*" K2559603_Reservation
+K2559603_User "1" o-- "*" K2559603_BorrowTransaction
+K2559603_LibraryService "1" o-- "*" K2559603_Book
+K2559603_LibraryService "1" o-- "*" K2559603_User
+K2559603_LibraryService "1" o-- "*" K2559603_BorrowTransaction
+K2559603_LibraryService "1" o-- "*" K2559603_Reservation
+
+K2559603_User ..|> K2559603_NotificationObserver
+K2559603_NotificationService ..|> K2559603_NotificationSubject
+K2559603_NotificationService o-- K2559603_NotificationObserver
+
+K2559603_AvailableState ..|> K2559603_BookState
+K2559603_BorrowedState ..|> K2559603_BookState
+K2559603_ReservedState ..|> K2559603_BookState
+K2559603_Book o-- K2559603_BookState
+
+K2559603_StudentFineStrategy ..|> K2559603_FineCalculationStrategy
+K2559603_FacultyFineStrategy ..|> K2559603_FineCalculationStrategy
+K2559603_GuestFineStrategy ..|> K2559603_FineCalculationStrategy
+K2559603_FineCalculationContext o-- K2559603_FineCalculationStrategy
+
+K2559603_BasicBookView ..|> K2559603_BookView
+K2559603_BookViewDecorator ..|> K2559603_BookView
+K2559603_FeaturedBookDecorator --|> K2559603_BookViewDecorator
+K2559603_RecommendedBookDecorator --|> K2559603_BookViewDecorator
+K2559603_SpecialEditionBookDecorator --|> K2559603_BookViewDecorator
+
+K2559603_BorrowBookCommand ..|> K2559603_Command
+K2559603_ReturnBookCommand ..|> K2559603_Command
+K2559603_ReserveBookCommand ..|> K2559603_Command
+K2559603_CancelReservationCommand ..|> K2559603_Command
+K2559603_CommandHistory o-- K2559603_Command
+
+@enduml
