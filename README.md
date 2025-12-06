@@ -83,4 +83,4 @@ mvn test
 ## UML Class Diagrams
 
 See `docs/uml-mermaid.md` and `docs/uml-plantuml.puml`.  
-All classes in the diagram are prefixed with your student ID **K2559603_** as required.
+All classes in the diagram are prefixed with my university ID **K2559603_** as required.
