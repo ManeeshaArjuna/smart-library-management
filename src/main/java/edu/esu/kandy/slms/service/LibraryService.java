@@ -33,16 +33,16 @@ public class LibraryService {
     }
 
     public void seedSampleData() {
-        Book b1 = new Book.Builder("B001", "Clean Code", "Robert C. Martin", "Programming", "9780132350884")
+        Book b1 = new Book.Builder("B1001", "Clean Code", "Robert C. Martin", "Programming", "9780132350884")
                 .featured(true)
                 .edition("1st")
                 .build();
 
-        Book b2 = new Book.Builder("B002", "Design Patterns", "Gang of Four", "Programming", "9780201633610")
+        Book b2 = new Book.Builder("B1002", "Design Patterns", "Gang of Four", "Programming", "9780201633610")
                 .recommended(true)
                 .build();
 
-        Book b3 = new Book.Builder("B003", "Effective Java", "Joshua Bloch", "Programming", "9780134685991")
+        Book b3 = new Book.Builder("B1003", "Effective Java", "Joshua Bloch", "Programming", "9780134685991")
                 .specialEdition(true)
                 .build();
 
@@ -53,9 +53,9 @@ public class LibraryService {
         // advance counter so auto-generated IDs don't clash with B001..B003
         bookCounter = 1003;
 
-        User u1 = new User("U001", "Alice", "alice@esu.lk", "0711111111", MembershipType.STUDENT);
-        User u2 = new User("U002", "Bob", "bob@esu.lk", "0722222222", MembershipType.FACULTY);
-        User u3 = new User("U003", "Charlie", "charlie@esu.lk", "0733333333", MembershipType.GUEST);
+        User u1 = new User("U1001", "Alice", "alice@esu.lk", "0711111111", MembershipType.STUDENT);
+        User u2 = new User("U1002", "Bob", "bob@esu.lk", "0722222222", MembershipType.FACULTY);
+        User u3 = new User("U1003", "Charlie", "charlie@esu.lk", "0733333333", MembershipType.GUEST);
 
         addUser(u1);
         addUser(u2);
