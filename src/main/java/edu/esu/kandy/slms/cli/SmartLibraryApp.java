@@ -1,18 +1,24 @@
 package edu.esu.kandy.slms.cli;
 
+import edu.esu.kandy.slms.auth.LibrarianAuthService;
 import edu.esu.kandy.slms.command.*;
 import edu.esu.kandy.slms.decorator.*;
 import edu.esu.kandy.slms.membership.MembershipType;
 import edu.esu.kandy.slms.model.Book;
+import edu.esu.kandy.slms.model.BorrowTransaction;
 import edu.esu.kandy.slms.model.User;
 import edu.esu.kandy.slms.observer.NotificationService;
 import edu.esu.kandy.slms.report.ReportService;
 import edu.esu.kandy.slms.service.LibraryService;
 import edu.esu.kandy.slms.util.ConsoleColors;
 
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Scanner;
 
 public class SmartLibraryApp {
+
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public static void main(String[] args) {
         NotificationService notificationService = new NotificationService();
@@ -21,6 +27,7 @@ public class SmartLibraryApp {
 
         ReportService reportService = new ReportService(libraryService);
         CommandHistory commandHistory = new CommandHistory();
+        LibrarianAuthService authService = new LibrarianAuthService();
         Scanner scanner = new Scanner(System.in);
 
         boolean running = true;
@@ -43,8 +50,8 @@ public class SmartLibraryApp {
                     System.out.println("\u2705 Notification scan completed.");
                 }
                 case "9" -> reportMenu(scanner, reportService);
-                case "10" -> librarianBookMenu(scanner, libraryService);
-                case "11" -> librarianUserMenu(scanner, libraryService);
+                case "10" -> administrationMenu(scanner, libraryService, authService);
+                case "11" -> historyMenu(scanner, libraryService);
                 case "0" -> {
                     System.out.println(ConsoleColors.GREEN +
                             "\uD83D\uDC4B Exiting Smart Library Management System. Bye!" +
@@ -82,14 +89,26 @@ public class SmartLibraryApp {
                 "7. \u21A9\uFE0F Undo Last Action\n" +
                 "8. \uD83D\uDD14 Run Due/Overdue Notifications\n" +
                 "9. \uD83D\uDCCA View Reports\n" +
-                "10. \uD83D\uDEE0 Librarian - Manage Books\n" +
-                "11. \uD83E\uDDD1\u200D\uD83D\uDCBC Librarian - Manage Users\n" +
+                "10. \uD83D\uDD10 Administration\n" +
+                "11. \uD83D\uDCDC View Borrow History\n" +
                 "0. \uD83D\uDEAA Exit\n"
                 + ConsoleColors.RESET);
     }
 
+    // ---------- Listing with table view ----------
+
+    private static String truncate(String value, int maxLen) {
+        if (value == null) return "";
+        if (value.length() <= maxLen) return value;
+        return value.substring(0, maxLen - 3) + "...";
+    }
+
     private static void listBooks(LibraryService libraryService) {
         System.out.println("\uD83D\uDCDA Books:");
+        System.out.println("----------------------------------------------------------------------------------------------");
+        System.out.printf("%-8s %-30s %-20s %-15s %-15s %-10s%n",
+                "ID", "Title", "Author", "Category", "ISBN", "State");
+        System.out.println("----------------------------------------------------------------------------------------------");
         for (Book book : libraryService.getAllBooks()) {
             BookView view = new BasicBookView(book);
             if (book.isFeatured()) {
@@ -101,18 +120,35 @@ public class SmartLibraryApp {
             if (book.isSpecialEdition()) {
                 view = new SpecialEditionBookDecorator(view);
             }
-            System.out.println(" - [" + book.getId() + "] " + view.getDisplayTitle()
-                    + " | State: " + book.getState().getName());
+            System.out.printf("%-8s %-30s %-20s %-15s %-15s %-10s%n",
+                    book.getId(),
+                    truncate(book.getTitle(), 30),
+                    truncate(book.getAuthor(), 20),
+                    truncate(book.getCategory(), 15),
+                    truncate(book.getIsbn(), 15),
+                    book.getState().getName());
         }
+        System.out.println("----------------------------------------------------------------------------------------------");
     }
 
     private static void listUsers(LibraryService libraryService) {
         System.out.println("\uD83D\uDC64 Users:");
+        System.out.println("----------------------------------------------------------------------------------------------");
+        System.out.printf("%-8s %-20s %-25s %-15s %-12s%n",
+                "ID", "Name", "Email", "Contact", "Membership");
+        System.out.println("----------------------------------------------------------------------------------------------");
         for (User user : libraryService.getAllUsers()) {
-            System.out.println(" - [" + user.getId() + "] " + user.getName()
-                    + " (" + user.getMembershipType() + ")");
+            System.out.printf("%-8s %-20s %-25s %-15s %-12s%n",
+                    user.getId(),
+                    truncate(user.getName(), 20),
+                    truncate(user.getEmail(), 25),
+                    truncate(user.getContactNumber(), 15),
+                    user.getMembershipType());
         }
+        System.out.println("----------------------------------------------------------------------------------------------");
     }
+
+    // ---------- Core flows ----------
 
     private static void borrowFlow(Scanner scanner, LibraryService libraryService, CommandHistory history) {
         System.out.print("Enter User ID: ");
@@ -154,6 +190,8 @@ public class SmartLibraryApp {
         history.push(cmd);
     }
 
+    // ---------- Reports ----------
+
     private static void reportMenu(Scanner scanner, ReportService reportService) {
         System.out.println(ConsoleColors.YELLOW +
                 "--- Reports ---\n" +
@@ -171,6 +209,38 @@ public class SmartLibraryApp {
         }
     }
 
+    // ---------- Administration & Authentication ----------
+
+    private static void administrationMenu(Scanner scanner, LibraryService libraryService, LibrarianAuthService authService) {
+        System.out.println(ConsoleColors.BLUE + "--- Administration Login ---" + ConsoleColors.RESET);
+        System.out.print("Username: ");
+        String username = scanner.nextLine();
+        System.out.print("Password: ");
+        String password = scanner.nextLine();
+
+        if (!authService.authenticate(username, password)) {
+            System.out.println(ConsoleColors.RED + "\u274C Invalid credentials. Access denied." + ConsoleColors.RESET);
+            return;
+        }
+
+        boolean inAdmin = true;
+        while (inAdmin) {
+            System.out.println(ConsoleColors.YELLOW +
+                    "--- Administration ---\n" +
+                    "1. Manage Books\n" +
+                    "2. Manage Users\n" +
+                    "0. Back\n" + ConsoleColors.RESET);
+            System.out.print("Choose: ");
+            String choice = scanner.nextLine().trim();
+            switch (choice) {
+                case "1" -> librarianBookMenu(scanner, libraryService);
+                case "2" -> librarianUserMenu(scanner, libraryService);
+                case "0" -> inAdmin = false;
+                default -> System.out.println("Invalid option.");
+            }
+        }
+    }
+
     private static void librarianBookMenu(Scanner scanner, LibraryService libraryService) {
         System.out.println(ConsoleColors.YELLOW +
                 "--- Librarian - Book Management ---\n" +
@@ -182,8 +252,6 @@ public class SmartLibraryApp {
         String choice = scanner.nextLine().trim();
         switch (choice) {
             case "1" -> {
-                System.out.print("Book ID: ");
-                String id = scanner.nextLine().trim();
                 System.out.print("Title: ");
                 String title = scanner.nextLine().trim();
                 System.out.print("Author: ");
@@ -192,9 +260,8 @@ public class SmartLibraryApp {
                 String category = scanner.nextLine().trim();
                 System.out.print("ISBN: ");
                 String isbn = scanner.nextLine().trim();
-                Book book = new Book.Builder(id, title, author, category, isbn).build();
-                libraryService.addBook(book);
-                System.out.println("\u2705 Book added.");
+                Book book = libraryService.createAndAddBook(title, author, category, isbn);
+                System.out.println("\u2705 Book added with ID: " + book.getId());
             }
             case "2" -> {
                 System.out.print("Book ID to update: ");
@@ -235,8 +302,6 @@ public class SmartLibraryApp {
         String choice = scanner.nextLine().trim();
         switch (choice) {
             case "1" -> {
-                System.out.print("User ID: ");
-                String id = scanner.nextLine().trim();
                 System.out.print("Name: ");
                 String name = scanner.nextLine().trim();
                 System.out.print("Email: ");
@@ -252,9 +317,8 @@ public class SmartLibraryApp {
                     System.out.println("\u274C Invalid membership type.");
                     return;
                 }
-                User user = new User(id, name, email, contact, type);
-                libraryService.addUser(user);
-                System.out.println("\u2705 User added.");
+                User user = libraryService.createAndAddUser(name, email, contact, type);
+                System.out.println("\u2705 User added with ID: " + user.getId());
             }
             case "2" -> {
                 System.out.print("User ID to remove: ");
@@ -264,5 +328,96 @@ public class SmartLibraryApp {
             }
             default -> System.out.println("Returning...");
         }
+    }
+
+    // ---------- Borrow history ----------
+
+    private static void historyMenu(Scanner scanner, LibraryService libraryService) {
+        System.out.println(ConsoleColors.YELLOW +
+                "--- Borrow History ---\n" +
+                "1. View by User ID\n" +
+                "2. View by Book ID\n" +
+                "0. Back\n" + ConsoleColors.RESET);
+        System.out.print("Choose: ");
+        String choice = scanner.nextLine().trim();
+        switch (choice) {
+            case "1" -> {
+                System.out.print("Enter User ID: ");
+                String uid = scanner.nextLine().trim();
+                User user = libraryService.getUser(uid);
+                if (user == null) {
+                    System.out.println("\u274C User not found.");
+                    return;
+                }
+                printHistoryForUser(user);
+            }
+            case "2" -> {
+                System.out.print("Enter Book ID: ");
+                String bid = scanner.nextLine().trim();
+                Book book = libraryService.getBook(bid);
+                if (book == null) {
+                    System.out.println("\u274C Book not found.");
+                    return;
+                }
+                printHistoryForBook(book);
+            }
+            default -> System.out.println("Returning...");
+        }
+    }
+
+    private static void printHistoryForUser(User user) {
+        List<BorrowTransaction> history = user.getBorrowHistory();
+        System.out.println("Borrow history for user: " + user.getName() + " [" + user.getId() + "]");
+        if (history.isEmpty()) {
+            System.out.println(" (no borrow records)");
+            return;
+        }
+        System.out.println("-----------------------------------------------------------------------------------------------------------");
+        System.out.printf("%-10s %-8s %-30s %-12s %-12s %-12s %-8s%n",
+                "TxID", "BookID", "Title", "Borrow", "Due", "Return", "Fine");
+        System.out.println("-----------------------------------------------------------------------------------------------------------");
+        for (BorrowTransaction tx : history) {
+            String txIdShort = tx.getId().length() > 8 ? tx.getId().substring(0, 8) : tx.getId();
+            String borrow = tx.getBorrowDate() != null ? DATE_FMT.format(tx.getBorrowDate()) : "";
+            String due = tx.getDueDate() != null ? DATE_FMT.format(tx.getDueDate()) : "";
+            String ret = tx.getReturnDate() != null ? DATE_FMT.format(tx.getReturnDate()) : "-";
+            System.out.printf("%-10s %-8s %-30s %-12s %-12s %-12s %-8.2f%n",
+                    txIdShort,
+                    tx.getBook().getId(),
+                    truncate(tx.getBook().getTitle(), 30),
+                    borrow,
+                    due,
+                    ret,
+                    tx.getFinePaid());
+        }
+        System.out.println("-----------------------------------------------------------------------------------------------------------");
+    }
+
+    private static void printHistoryForBook(Book book) {
+        List<BorrowTransaction> history = book.getBorrowHistory();
+        System.out.println("Borrow history for book: " + book.getTitle() + " [" + book.getId() + "]");
+        if (history.isEmpty()) {
+            System.out.println(" (no borrow records)");
+            return;
+        }
+        System.out.println("-----------------------------------------------------------------------------------------------------------");
+        System.out.printf("%-10s %-8s %-20s %-12s %-12s %-12s %-8s%n",
+                "TxID", "UserID", "UserName", "Borrow", "Due", "Return", "Fine");
+        System.out.println("-----------------------------------------------------------------------------------------------------------");
+        for (BorrowTransaction tx : history) {
+            String txIdShort = tx.getId().length() > 8 ? tx.getId().substring(0, 8) : tx.getId();
+            String borrow = tx.getBorrowDate() != null ? DATE_FMT.format(tx.getBorrowDate()) : "";
+            String due = tx.getDueDate() != null ? DATE_FMT.format(tx.getDueDate()) : "";
+            String ret = tx.getReturnDate() != null ? DATE_FMT.format(tx.getReturnDate()) : "-";
+            System.out.printf("%-10s %-8s %-20s %-12s %-12s %-12s %-8.2f%n",
+                    txIdShort,
+                    tx.getUser().getId(),
+                    truncate(tx.getUser().getName(), 20),
+                    borrow,
+                    due,
+                    ret,
+                    tx.getFinePaid());
+        }
+        System.out.println("-----------------------------------------------------------------------------------------------------------");
     }
 }

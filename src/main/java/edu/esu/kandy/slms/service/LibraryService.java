@@ -24,6 +24,10 @@ public class LibraryService {
 
     private final NotificationService notificationService;
 
+    // simple in-memory counters for auto-generated IDs
+    private int bookCounter = 1000;
+    private int userCounter = 1000;
+
     public LibraryService(NotificationService notificationService) {
         this.notificationService = notificationService;
     }
@@ -46,6 +50,9 @@ public class LibraryService {
         addBook(b2);
         addBook(b3);
 
+        // advance counter so auto-generated IDs don't clash with B001..B003
+        bookCounter = 1003;
+
         User u1 = new User("U001", "Alice", "alice@esu.lk", "0711111111", MembershipType.STUDENT);
         User u2 = new User("U002", "Bob", "bob@esu.lk", "0722222222", MembershipType.FACULTY);
         User u3 = new User("U003", "Charlie", "charlie@esu.lk", "0733333333", MembershipType.GUEST);
@@ -53,9 +60,27 @@ public class LibraryService {
         addUser(u1);
         addUser(u2);
         addUser(u3);
+
+        userCounter = 1003;
     }
 
-    // Book management
+    // --- Auto ID creation helpers ---
+
+    public Book createAndAddBook(String title, String author, String category, String isbn) {
+        String id = "B" + (++bookCounter);
+        Book book = new Book.Builder(id, title, author, category, isbn).build();
+        addBook(book);
+        return book;
+    }
+
+    public User createAndAddUser(String name, String email, String contactNumber, MembershipType membershipType) {
+        String id = "U" + (++userCounter);
+        User user = new User(id, name, email, contactNumber, membershipType);
+        addUser(user);
+        return user;
+    }
+
+    // --- Book management ---
     public void addBook(Book book) {
         books.put(book.getId(), book);
     }
@@ -96,7 +121,7 @@ public class LibraryService {
         books.remove(bookId);
     }
 
-    // User management
+    // --- User management ---
     public void addUser(User user) {
         users.put(user.getId(), user);
         notificationService.registerObserver(user);
@@ -117,7 +142,7 @@ public class LibraryService {
         }
     }
 
-    // Core operations
+    // --- Core operations ---
     public void borrowBook(String userId, String bookId) {
         User user = getUser(userId);
         Book book = getBook(bookId);
@@ -292,7 +317,7 @@ public class LibraryService {
         }
     }
 
-    // Reports
+    // --- Reports ---
     public java.util.List<Book> getMostBorrowedBooks(int topN) {
         java.util.Map<Book, Long> counts = transactions.stream()
                 .collect(Collectors.groupingBy(BorrowTransaction::getBook, Collectors.counting()));
