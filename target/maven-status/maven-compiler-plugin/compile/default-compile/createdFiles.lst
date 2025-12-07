@@ -9,10 +9,12 @@ edu/esu/kandy/slms/model/Book$Builder.class
 edu/esu/kandy/slms/service/LibraryService.class
 edu/esu/kandy/slms/cli/SmartLibraryApp.class
 edu/esu/kandy/slms/model/Reservation.class
+edu/esu/kandy/slms/auth/UserAuthService.class
 edu/esu/kandy/slms/command/Command.class
 edu/esu/kandy/slms/util/ConsoleColors.class
 edu/esu/kandy/slms/strategy/GuestFineStrategy.class
 edu/esu/kandy/slms/decorator/FeaturedBookDecorator.class
+edu/esu/kandy/slms/auth/LibrarianAuthService.class
 edu/esu/kandy/slms/decorator/BasicBookView.class
 edu/esu/kandy/slms/model/Book.class
 edu/esu/kandy/slms/decorator/RecommendedBookDecorator.class
