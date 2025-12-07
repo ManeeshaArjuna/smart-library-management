@@ -217,6 +217,55 @@ public class SmartLibraryApp {
         }
     }
 
+    private static String readValidatedName(Scanner scanner, String prompt) {
+        while (true) {
+            String value = readInput(scanner, prompt); // supports '#'
+            if (value == null) {
+                return null; // '#' pressed
+            }
+            if (value.isBlank()) {
+                System.out.println(ConsoleColors.RED + "Name cannot be empty." + ConsoleColors.RESET);
+                continue;
+            }
+            // letters and spaces only
+            if (!value.matches("[A-Za-z ]+")) {
+                System.out.println(ConsoleColors.RED + "Name should contain only letters and spaces." + ConsoleColors.RESET);
+                continue;
+            }
+            return value;
+        }
+    }
+
+    private static String readValidatedEmail(Scanner scanner, String prompt) {
+        while (true) {
+            String value = readInput(scanner, prompt); // supports '#'
+            if (value == null) {
+                return null;
+            }
+            // very simple email pattern: something@something.domain
+            if (!value.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+                System.out.println(ConsoleColors.RED + "Please enter a valid email address (e.g. user@example.com)." + ConsoleColors.RESET);
+                continue;
+            }
+            return value;
+        }
+    }
+
+    private static String readValidatedContact(Scanner scanner, String prompt) {
+        while (true) {
+            String value = readInput(scanner, prompt); // supports '#'
+            if (value == null) {
+                return null;
+            }
+            // exactly 10 digits
+            if (!value.matches("\\d{10}")) {
+                System.out.println(ConsoleColors.RED + "Contact number must be exactly 10 digits (numbers only)." + ConsoleColors.RESET);
+                continue;
+            }
+            return value;
+        }
+    }
+
     private static String truncate(String value, int maxLen) {
         if (value == null) return "";
         if (value.length() <= maxLen) return value;
@@ -258,11 +307,14 @@ public class SmartLibraryApp {
                                          UserAuthService userAuthService) {
 
         System.out.println(ConsoleColors.YELLOW + "--- User Sign Up ---" + ConsoleColors.RESET);
-        String name = readInput(scanner, "Name: ");
+
+        String name = readValidatedName(scanner, "Name: ");
         if (name == null) return;
-        String email = readInput(scanner, "Email: ");
+
+        String email = readValidatedEmail(scanner, "Email: ");
         if (email == null) return;
-        String contact = readInput(scanner, "Contact Number: ");
+
+        String contact = readValidatedContact(scanner, "Contact Number (10 digits): ");
         if (contact == null) return;
 
         MembershipType membershipType = selectMembershipType(scanner);
@@ -274,6 +326,7 @@ public class SmartLibraryApp {
         String password = readInput(scanner, "Create Password: ");
         if (password == null) return;
 
+        // rest of your existing code stays the same
         User created;
         try {
             created = userAuthService.signUp(name, email, contact, membershipType, password);
@@ -287,7 +340,6 @@ public class SmartLibraryApp {
                 "  (keep this for login)" +
                 ConsoleColors.RESET);
 
-        // Optionally log the user in immediately:
         runMainMenu(scanner, libraryService, reportService, commandHistory, created, false);
     }
 
@@ -574,11 +626,13 @@ public class SmartLibraryApp {
         }
         switch (choice) {
             case "1" -> {
-                String name = readInput(scanner, "Name: ");
+                String name = readValidatedName(scanner, "Name: ");
                 if (name == null) return;
-                String email = readInput(scanner, "Email: ");
+
+                String email = readValidatedEmail(scanner, "Email: ");
                 if (email == null) return;
-                String contact = readInput(scanner, "Contact Number: ");
+
+                String contact = readValidatedContact(scanner, "Contact Number (10 digits): ");
                 if (contact == null) return;
 
                 MembershipType type = selectMembershipType(scanner);
