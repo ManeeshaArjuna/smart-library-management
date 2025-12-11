@@ -9,8 +9,6 @@ Each test case includes:
 - **Input / Steps**
 - **Expected Output**
 
-You can add actual screenshots and pass/fail status when executing these in the CLI.
-
 ---
 
 ## 1. Authentication & User Management
@@ -145,7 +143,6 @@ You can add actual screenshots and pass/fail status when executing these in the 
 
 ### Notes for Execution
 
-- **Actual Output** and **Result (Pass/Fail)** columns can be filled in manually after running each test and capturing CLI screenshots.
 - For overdue and notification tests, you may need to:
   - Temporarily adjust dates in `BorrowTransaction`, or  
   - Seed specific data in `LibraryService.seedSampleData()` for testing.
