@@ -146,6 +146,5 @@ Each test case includes:
 - For overdue and notification tests, you may need to:
   - Temporarily adjust dates in `BorrowTransaction`, or  
   - Seed specific data in `LibraryService.seedSampleData()` for testing.
-- Make sure the test IDs (TC001, TC002, …) match what you reference in your report.
 
 ```markdown
