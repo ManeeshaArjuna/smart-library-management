@@ -50,12 +50,12 @@ public class LibraryService {
         addBook(b2);
         addBook(b3);
 
-        // advance counter so auto-generated IDs don't clash with B001..B003
+        // advance counter so auto-generated IDs don't clash with B1001..B1003
         bookCounter = 1003;
 
-        User u1 = new User("U1001", "Alice", "alice@esu.lk", "0711111111", MembershipType.STUDENT);
-        User u2 = new User("U1002", "Bob", "bob@esu.lk", "0722222222", MembershipType.FACULTY);
-        User u3 = new User("U1003", "Charlie", "charlie@esu.lk", "0733333333", MembershipType.GUEST);
+        User u1 = new User("U1001", "Amila", "amila@esu.lk", "0711111111", MembershipType.STUDENT);
+        User u2 = new User("U1002", "Jayami", "jayami@esu.lk", "0722222222", MembershipType.FACULTY);
+        User u3 = new User("U1003", "Santhush", "santhush@esu.lk", "0733333333", MembershipType.GUEST);
 
         addUser(u1);
         addUser(u2);
