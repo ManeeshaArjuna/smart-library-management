@@ -9,7 +9,7 @@ public class BasicBookView implements BookView {
     public BasicBookView(Book book) {
         this.book = book;
     }
-
+    // Implementing the method from BookView interface
     @Override
     public String getDisplayTitle() {
         return book.getTitle() + " by " + book.getAuthor();

@@ -3,6 +3,7 @@ package edu.esu.kandy.slms.state;
 import edu.esu.kandy.slms.model.Book;
 import edu.esu.kandy.slms.model.User;
 
+// State when the book is reserved by a user
 public class ReservedState implements BookState {
 
     @Override

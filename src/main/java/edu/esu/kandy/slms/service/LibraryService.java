@@ -185,7 +185,7 @@ public class LibraryService {
     public void returnBook(String userId, String bookId) {
         internalReturn(userId, bookId, true);
     }
-
+    // Internal return logic
     private void internalReturn(String userId, String bookId, boolean applyFine) {
         User user = getUser(userId);
         Book book = getBook(bookId);
@@ -221,7 +221,7 @@ public class LibraryService {
             NotificationEvent event = new NotificationEvent(NotificationEventType.OVERDUE, msg, user, book);
             notificationService.notifyObservers(event);
         }
-
+        // Update book state
         try {
             book.getState().returnBook(book, user);
         } catch (IllegalStateException e) {
@@ -242,6 +242,7 @@ public class LibraryService {
         System.out.println("\u2705 Book returned. Fine paid: LKR " + fine);
     }
 
+    // --- Reservations ---
     public void reserveBook(String userId, String bookId) {
         User user = getUser(userId);
         Book book = getBook(bookId);
@@ -268,6 +269,7 @@ public class LibraryService {
         System.out.println("\u2705 Book reserved successfully.");
     }
 
+    // Cancel reservation
     public void cancelReservation(String userId, String bookId) {
         User user = getUser(userId);
         Book book = getBook(bookId);
@@ -296,6 +298,7 @@ public class LibraryService {
         System.out.println("\u2705 Reservation cancelled.");
     }
 
+    // --- Due date scanning and notifications ---
     public void scanDueAndOverdue() {
         LocalDate today = LocalDate.now();
 

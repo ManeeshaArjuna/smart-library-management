@@ -27,6 +27,7 @@ public class Book {
 
     private BookState state;
 
+    // Private constructor to enforce the use of Builder
     public Book(Builder builder) {
         this.id = builder.id;
         this.title = builder.title;
@@ -92,6 +93,7 @@ public class Book {
 
     public void setState(BookState state) { this.state = state; }
 
+    // Builder class for constructing Book instances
     public static class Builder {
         private final String id;
         private final String title;

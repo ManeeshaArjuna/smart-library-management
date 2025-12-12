@@ -2,6 +2,7 @@ package edu.esu.kandy.slms.auth;
 
 public class LibrarianAuthService {
 
+    // Hardcoded credentials for demonstration purposes
     private final String username = "admin";
     private final String password = "admin123";
 

@@ -14,7 +14,7 @@ public class ReportService {
     public ReportService(LibraryService libraryService) {
         this.libraryService = libraryService;
     }
-
+    // Print top N most borrowed books
     public void printMostBorrowedBooks(int topN) {
         List<Book> books = libraryService.getMostBorrowedBooks(topN);
         System.out.println("\uD83D\uDCCA Most Borrowed Books:");
@@ -25,7 +25,7 @@ public class ReportService {
             System.out.println(" - " + book.getTitle() + " by " + book.getAuthor());
         }
     }
-
+    // Print list of active borrowers
     public void printActiveBorrowers() {
         List<User> users = libraryService.getActiveBorrowers();
         System.out.println("\uD83D\uDC65 Active Borrowers:");
@@ -36,7 +36,7 @@ public class ReportService {
             System.out.println(" - " + user.getName() + " (" + user.getMembershipType() + ")");
         }
     }
-
+    // Print list of overdue books
     public void printOverdueBooks() {
         List<BorrowTransaction> overdue = libraryService.getOverdueTransactions();
         System.out.println("\u23F0 Overdue Books:");

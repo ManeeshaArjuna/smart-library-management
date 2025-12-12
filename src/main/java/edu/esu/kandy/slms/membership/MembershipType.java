@@ -1,5 +1,6 @@
 package edu.esu.kandy.slms.membership;
 
+// Enum representing different types of library memberships
 public enum MembershipType {
     STUDENT(2, 14),
     FACULTY(5, 30),

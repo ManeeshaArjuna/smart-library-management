@@ -1,5 +1,6 @@
 package edu.esu.kandy.slms.util;
 
+// ANSI escape codes for console text coloring
 public final class ConsoleColors {
     public static final String RESET = "\u001B[0m";
     public static final String GREEN = "\u001B[32m";
