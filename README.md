@@ -80,7 +80,13 @@ java -jar target/smart-library-management-1.0-SNAPSHOT.jar
 mvn test
 ```
 
+## Admin Login
+Default admin logging credentials
+
+Admin ID : admin
+Password : admin123
+
 ## UML Class Diagrams
 
-See `docs/uml-mermaid.md` and `docs/uml-plantuml.puml`.  
+See `docs/uml-mermaid.md`. 
 All classes in the diagram are prefixed with my university ID **K2559603_** as required.
